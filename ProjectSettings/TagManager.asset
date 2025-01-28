@@ -9,6 +9,8 @@ TagManager:
   - Door
   - CorridorEnd
   - CorridorBeginning
+  - Key
+  - Room
   layers:
   - Default
   - TransparentFX
@@ -17,7 +19,7 @@ TagManager:
   - Water
   - UI
   - Hallway
-  - 
+  - Room
   - 
   - 
   - 

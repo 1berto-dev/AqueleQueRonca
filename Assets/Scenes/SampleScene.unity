@@ -399,22 +399,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1975568665611547463, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 13400000, guid: d8beae2de4c79e746b9699b7ec40b243, type: 2}
-    - target: {fileID: 4381201552857364642, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4381201552857364642, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 4381201552857364642, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1.5
-      objectReference: {fileID: 0}
     - target: {fileID: 4381201552857364642, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.33
@@ -454,42 +438,6 @@ PrefabInstance:
     - target: {fileID: 4381201552857364642, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6033446790165710735, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.483
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: jumpForce
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: walkSpeed
-      value: 12
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: groundDrag
-      value: 8.61
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: sprintSpeed
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: playerHeight
-      value: 1.9
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: airMultiplier
-      value: 1.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6602584962039724338, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: speedIncreaseMultiplier
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7965980141091033337, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
-      propertyPath: m_Drag
-      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8479493588064212457, guid: 940d660849fb3d14d978f0cf1b55fe37, type: 3}
       propertyPath: m_Name
@@ -596,6 +544,11 @@ MonoBehaviour:
   roomPool:
   - {fileID: 6216101077191092753, guid: 63fef6a6026ae674f87ae8d9da807b11, type: 3}
   - {fileID: 6216101077191092753, guid: 63fef6a6026ae674f87ae8d9da807b11, type: 3}
+  - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
+  - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
+  - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
+  - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
+  - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
   initialRooms:
   - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
   - {fileID: 494182481820760435, guid: 83f4a9b63b505f94c84550972ec2c275, type: 3}
@@ -608,6 +561,12 @@ MonoBehaviour:
   - {fileID: 1928202514545439063, guid: 6344b1608ef0128429e25c7eec46bda4, type: 3}
   - {fileID: 8429615184908037179, guid: 6812fd73863dbda4f9cb269366dcd335, type: 3}
   - {fileID: 796086727921141538, guid: dd07da36e5e933048ab61705d0059171, type: 3}
+  roomLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  closeDoor: {fileID: 8352077006790041398, guid: 24a673ac3c7a604499fce8751575fa1a, type: 3}
+  key: {fileID: 8183965403152113043, guid: 674ad6f9e5e4b6d439f65523c8684f7e, type: 3}
+  stone: {fileID: 1490450214947992304, guid: c632e96d717ac02408ec6cc2f03db8b2, type: 3}
   instantiatedRooms: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
