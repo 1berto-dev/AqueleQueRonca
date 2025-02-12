@@ -33,7 +33,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.33, z: -46.6}
-  m_LocalScale: {x: 1.5, y: 1.8, z: 1.5}
+  m_LocalScale: {x: 0.26, y: 0.26399997, z: 0.26}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6033446790165710735}
@@ -111,7 +111,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.5366986
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -154,17 +154,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58491655c4752244da2a9e0960d08f02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 12
-  sprintSpeed: 15
-  speedIncreaseMultiplier: 5
+  walkSpeed: 6
+  sprintSpeed: 7
+  speedIncreaseMultiplier: 2
   slopeIncreaseMultiplier: 2.5
   groundDrag: 8.61
-  jumpForce: 30
+  jumpForce: 15
   jumpCooldown: 0.25
-  airMultiplier: 1.1
+  airMultiplier: 1
   jumpKey: 32
   sprintKey: 304
-  playerHeight: 1.9
+  playerHeight: 0.27
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8

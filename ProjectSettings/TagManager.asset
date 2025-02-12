@@ -11,6 +11,7 @@ TagManager:
   - CorridorBeginning
   - Key
   - Room
+  - Wall
   layers:
   - Default
   - TransparentFX

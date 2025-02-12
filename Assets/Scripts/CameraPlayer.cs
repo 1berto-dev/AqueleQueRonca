@@ -3,10 +3,10 @@ using UnityEngine;
 public class CameraPlayer : MonoBehaviour
 {
     private Transform cameraPosition;
-    public float sensY;
-    public float sensX;
-
-   private GameObject player;
+    public float sensY = 200;
+    public float sensX = 200;
+    [SerializeField]
+    private GameObject player;
 
     float rotationY;
     float rotationX;
