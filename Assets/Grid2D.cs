@@ -8,6 +8,13 @@ public class Grid2D<T> {
     public Vector2Int Size { get; private set; }
     public Vector2Int Offset { get; set; }
 
+    public static (int, int, int)[] Directions = {
+                        (-1, 0, 90),
+                        (1, 0, -90),
+                        (0, 1, 180),
+                        (0, -1, 0),
+                    };
+
     public Grid2D(Vector2Int size, Vector2Int offset) {
         Size = size;
         Offset = offset;

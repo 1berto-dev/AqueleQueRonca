@@ -62,7 +62,7 @@ public class Generator2D : MonoBehaviour {
     List<Room> rooms;
     Delaunay2D delaunay;
     HashSet<Prim.Edge> selectedEdges;
-    HashSet<Vector2Int> connectionPoints = new HashSet<Vector2Int>();
+    HashSet<Vector2Int>[] connectionPoints;
     GameObject player;
 
     void Start() 
@@ -103,55 +103,127 @@ public class Generator2D : MonoBehaviour {
                 {
                     // Instancia o chão da sala
                     Instantiate(roomFloorPrefab, new Vector3(x, 0, y), Quaternion.identity);
-
-                    // Verifica as células adjacentes para colocar paredes
-                    if (x > 0 && grid[x - 1, y] != CellType.Room && !connectionPoints.Contains(position)) 
+                    foreach((int, int, int) direction in Grid2D<CellType>.Directions)
                     {
-                        // Parede à esquerda
+                        Vector2Int testPos = new Vector2Int(x+direction.Item1, y+direction.Item2);
+                        if (testPos.x >= 0 && testPos.x <= size.x - 1 && testPos.y >= 0 && testPos.y <= size.y - 1)
+                        {
+                            if (grid[testPos] != CellType.Room)
+                            {
+                                bool contain = false;
+                                for(int i = 0; i < selectedEdges.Count; i++)
+                                {
+                                    if (connectionPoints[i].Contains(position))
+                                    {
+                                        contain = true;
+                                    }
+                                }
+                                if (!contain)
+                                    Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, direction.Item3, 0));
+                            }
+                        }
+                    }
+
+                    if (x == 0)
+                    {
                         Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 90, 0));
                     }
-                    if (x < size.x - 1 && grid[x + 1, y] != CellType.Room && !connectionPoints.Contains(position)) 
+
+                    if (x == size.x - 1)
                     {
-                        // Parede à direita
-                        Instantiate(roomWallPrefab, new Vector3(x + 1, 0, y), Quaternion.Euler(0, 90, 0));
+                        Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, -90, 0));
                     }
-                    if (y > 0 && grid[x, y - 1] != CellType.Room && !connectionPoints.Contains(position)) 
+
+
+                    if (y == 0)
                     {
-                        // Parede abaixo
-                        Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.identity);
+                        Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 0, 0));
                     }
-                    if (y < size.y - 1 && grid[x, y + 1] != CellType.Room && !connectionPoints.Contains(position)) 
+
+                    if (y == size.y - 1)
                     {
-                        // Parede acima
-                        Instantiate(roomWallPrefab, new Vector3(x, 0, y + 1), Quaternion.identity);
+                        Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 180, 0));
                     }
+                    // // Verifica as células adjacentes para colocar paredes
+                    // if (x > 0 && grid[x - 1, y] != CellType.Room && !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede à esquerda
+                    //     Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 90, 0));
+                    // }
+                    // if (x < size.x - 1 && grid[x + 1, y] != CellType.Room && !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede à direita
+                    //     Instantiate(roomWallPrefab, new Vector3(x + 1, 0, y), Quaternion.Euler(0, 90, 0));
+                    // }
+                    // if (y > 0 && grid[x, y - 1] != CellType.Room && !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede abaixo
+                    //     Instantiate(roomWallPrefab, new Vector3(x, 0, y), Quaternion.identity);
+                    // }
+                    // if (y < size.y - 1 && grid[x, y + 1] != CellType.Room && !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede acima
+                    //     Instantiate(roomWallPrefab, new Vector3(x, 0, y + 1), Quaternion.identity);
+                    // }
                 } 
                 else if (cellType == CellType.Hallway) 
                 {
                     // Instancia o chão do corredor
                     Instantiate(hallwayFloorPrefab, new Vector3(x, 0, y), Quaternion.identity);
-
-                    // Verifica as células adjacentes para colocar paredes
-                    if (x > 0 && grid[x - 1, y] != CellType.Hallway  && !connectionPoints.Contains(position)) 
+                    
+                    foreach((int, int, int) direction in Grid2D<CellType>.Directions)
                     {
-                        // Parede à esquerda
+                        if (x > 0 && x < size.x - 1 && y > 0 && y < size.y - 1)
+                        {
+                            if (grid[x+direction.Item1, y+direction.Item2] == CellType.None)
+                            {
+                                Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, direction.Item3, 0));
+                            }
+                        }
+                        
+                    }
+
+                    if (x == 0)
+                    {
                         Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 90, 0));
                     }
-                    if (x < size.x - 1 && grid[x + 1, y] != CellType.Hallway &&  !connectionPoints.Contains(position)) 
+
+                    if (x == size.x - 1)
                     {
-                        // Parede à direita
-                        Instantiate(hallwayWallPrefab, new Vector3(x + 1, 0, y), Quaternion.Euler(0, 90, 0));
+                        Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, -90, 0));
                     }
-                    if (y > 0 && grid[x, y - 1] != CellType.Hallway &&  !connectionPoints.Contains(position)) 
+
+
+                    if (y == 0)
                     {
-                        // Parede abaixo
-                        Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.identity);
+                        Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 0, 0));
                     }
-                    if (y < size.y - 1 && grid[x, y + 1] != CellType.Hallway && !connectionPoints.Contains(position)) 
+
+                    if (y == size.y - 1)
                     {
-                        // Parede acima
-                        Instantiate(hallwayWallPrefab, new Vector3(x, 0, y + 1), Quaternion.identity);
+                        Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 180, 0));
                     }
+                    // // Verifica as células adjacentes para colocar paredes
+                    // if (x > 0 && grid[x - 1, y] == CellType.None) 
+                    // {
+                    //     // Parede à esquerda
+                    //     Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.Euler(0, 90, 0));
+                    // }
+                    // if (x < size.x - 1 && grid[x + 1, y] != CellType.Hallway &&  !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede à direita
+                    //     Instantiate(hallwayWallPrefab, new Vector3(x + 1, 0, y), Quaternion.Euler(0, 90, 0));
+                    // }
+                    // if (y > 0 && grid[x, y - 1] != CellType.Hallway &&  !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede abaixo
+                    //     Instantiate(hallwayWallPrefab, new Vector3(x, 0, y), Quaternion.identity);
+                    // }
+                    // if (y < size.y - 1 && grid[x, y + 1] != CellType.Hallway && !connectionPoints.Contains(position)) 
+                    // {
+                    //     // Parede acima
+                    //     Instantiate(hallwayWallPrefab, new Vector3(x, 0, y + 1), Quaternion.identity);
+                    // }
                 }
             }
         }
@@ -229,8 +301,10 @@ public class Generator2D : MonoBehaviour {
     void PathfindHallways() 
     {
         DungeonPathfinder2D aStar = new DungeonPathfinder2D(size);
-
+        connectionPoints = new HashSet<Vector2Int>[selectedEdges.Count];
+        int j = 0;
         foreach (var edge in selectedEdges) {
+            connectionPoints[j] = new HashSet<Vector2Int>();
             var startRoom = (edge.U as Vertex<Room>).Item;
             var endRoom = (edge.V as Vertex<Room>).Item;
 
@@ -258,7 +332,7 @@ public class Generator2D : MonoBehaviour {
             });
 
             if (path != null) {
-                for (int i = 0; i < path.Count; i++) 
+                for (int i = path.Count-1; i >= 0 ; i--) 
                 {
                     var current = path[i];
 
@@ -267,17 +341,18 @@ public class Generator2D : MonoBehaviour {
                         grid[current] = CellType.Hallway;
                     }
 
-                    if (i > 0) {
-                        var prev = path[i - 1];
+                    if (i < path.Count-1) {
+                        var prev = path[i + 1];
                         var delta = current - prev;
 
                         // Adiciona a posição da conexão entre quarto e corredor
                         if (grid[prev] == CellType.Room) {
-                            connectionPoints.Add(prev); // Adiciona a posição da sala (entrada)
+                            connectionPoints[j].Add(prev); // Adiciona a posição da sala (entrada)
                         }
                     }
                 }
             }
+            j++;
         }
 }
 void SpawnPlayerInRandomRoom() 
