@@ -4,6 +4,7 @@ using UnityEngine;
 using Random = System.Random;
 using Graphs;
 using UnityEditor.ShaderGraph;
+using UnityEditor.Search;
 
 public class Generator2D : MonoBehaviour {
     enum CellType {
@@ -32,6 +33,8 @@ public class Generator2D : MonoBehaviour {
     [SerializeField]
     Vector2Int roomMaxSize;
     [SerializeField]
+    Vector2Int roomMinSize;
+    [SerializeField]
     GameObject cubePrefab;
     [SerializeField]
     Material redMaterial;
@@ -55,6 +58,8 @@ public class Generator2D : MonoBehaviour {
     GameObject hallwayWallPrefab; 
     [SerializeField]
     GameObject hallwayFloorPrefab;
+    [SerializeField]
+    GameObject key;
 
 
     Random random;
@@ -65,9 +70,16 @@ public class Generator2D : MonoBehaviour {
     HashSet<Vector2Int>[] connectionPoints;
     GameObject player;
 
+
+    [Header("")]
+    [SerializeField] int seed;
+
     void Start() 
     {
-        int seed = System.DateTime.Now.Millisecond;
+        if(seed == 0)
+        seed = System.DateTime.Now.Millisecond;
+
+        Debug.Log(seed);
         random = new Random(seed);
         Generate();
     }
@@ -83,7 +95,6 @@ public class Generator2D : MonoBehaviour {
         CreateHallways(); // Cria as conexões entre as salas
         PathfindHallways(); // Gera os corredores
         FillGridWithPieces(); // Preenche o grid com peças 3D
-
 
         SpawnPlayerInRandomRoom();
 
@@ -103,6 +114,7 @@ public class Generator2D : MonoBehaviour {
                 {
                     // Instancia o chão da sala
                     Instantiate(roomFloorPrefab, new Vector3(x, 0, y), Quaternion.identity);
+
                     foreach((int, int, int) direction in Grid2D<CellType>.Directions)
                     {
                         Vector2Int testPos = new Vector2Int(x+direction.Item1, y+direction.Item2);
@@ -237,8 +249,8 @@ public class Generator2D : MonoBehaviour {
             );
 
             Vector2Int roomSize = new Vector2Int(
-                random.Next(2, roomMaxSize.x + 1),
-                random.Next(2, roomMaxSize.y + 1)
+                random.Next(roomMinSize.x, roomMaxSize.x + 1),
+                random.Next(roomMinSize.y, roomMaxSize.y + 1)
             );
 
             bool add = true;
@@ -268,7 +280,8 @@ public class Generator2D : MonoBehaviour {
         }
     }
 
-    void Triangulate() {
+    void Triangulate() 
+    {
         List<Vertex> vertices = new List<Vertex>();
 
         foreach (var room in rooms) {
@@ -278,10 +291,12 @@ public class Generator2D : MonoBehaviour {
         delaunay = Delaunay2D.Triangulate(vertices);
     }
 
-    void CreateHallways() {
+    void CreateHallways() 
+    {
         List<Prim.Edge> edges = new List<Prim.Edge>();
 
-        foreach (var edge in delaunay.Edges) {
+        foreach (var edge in delaunay.Edges) 
+        {
             edges.Add(new Prim.Edge(edge.U, edge.V));
         }
 
@@ -289,10 +304,59 @@ public class Generator2D : MonoBehaviour {
 
         selectedEdges = new HashSet<Prim.Edge>(mst);
         var remainingEdges = new HashSet<Prim.Edge>(edges);
+        // remainingEdges.ExceptWith(selectedEdges);
+        
+        // Garantir que cada sala tenha pelo menos uma conexão
+        foreach (var room in rooms) 
+        {
+            bool hasConnection = false;
+            foreach (var edge in selectedEdges)
+            {
+                if ((edge.U as Vertex<Room>).Item == room || (edge.V as Vertex<Room>).Item == room) {
+                    hasConnection = true;
+                    break;
+                }
+            }
+
+            if (!hasConnection) {
+                Debug.LogWarning($"Sala em {room.bounds.position} não está conectada. Adicionando conexão manualmente.");
+
+                // Encontra a sala mais próxima para conectar
+                Room closestRoom = null;
+                float minDistance = float.MaxValue;
+
+                foreach (var otherRoom in rooms) 
+                {
+                    if (otherRoom == room) continue;
+
+                    float distance = Vector2.Distance(room.bounds.center, otherRoom.bounds.center);
+                    if (distance < minDistance) 
+                    {
+                        minDistance = distance;
+                        closestRoom = otherRoom;
+                    }
+                }
+
+                // Adiciona uma aresta entre a sala desconectada e a sala mais próxima
+                if (closestRoom != null) 
+                {
+                    var newEdge = new Prim.Edge(
+                        new Vertex<Room>(room.bounds.center, room),
+                        new Vertex<Room>(closestRoom.bounds.center, closestRoom)
+                    );
+                    selectedEdges.Add(newEdge);
+                }
+            }
+        }
+
+        // Adiciona arestas extras aleatoriamente (opcional)
+        remainingEdges = new HashSet<Prim.Edge>(edges);
         remainingEdges.ExceptWith(selectedEdges);
 
-        foreach (var edge in remainingEdges) {
-            if (random.NextDouble() < 0.125) {
+        foreach (var edge in remainingEdges) 
+        {
+            if (random.NextDouble() < 0.125) 
+            {
                 selectedEdges.Add(edge);
             }
         }
@@ -354,111 +418,138 @@ public class Generator2D : MonoBehaviour {
             }
             j++;
         }
+        
+        // Verifica se todas as salas estão conectadas
+        foreach (var room in rooms) 
+        {
+        bool isConnected = false;
+        foreach (var edge in selectedEdges) 
+        {
+            if ((edge.U as Vertex<Room>).Item == room || (edge.V as Vertex<Room>).Item == room) {
+                isConnected = true;
+                break;
+            }
+        }
+
+        if (!isConnected) 
+        {
+            Debug.LogWarning($"Sala em {room.bounds.position} não está conectada!");
+        }
+    }
 }
-void SpawnPlayerInRandomRoom() 
-{
-    if (rooms.Count == 0) 
+
+    void SpawnPlayerInRandomRoom() 
     {
-        Debug.LogWarning("Nenhuma sala foi gerada.");
-        return;
+        if (rooms.Count == 0) 
+        {
+            Debug.LogWarning("Nenhuma sala foi gerada.");
+            return;
+        }
+
+        // Escolhe uma sala aleatória
+        int randomIndex = random.Next(0, rooms.Count);
+        Room spawnRoom = rooms[randomIndex];
+
+        // Obtém a posição central da sala
+        Vector2Int spawnPosition = new Vector2Int(
+            spawnRoom.bounds.x + spawnRoom.bounds.width / 2,
+            spawnRoom.bounds.y + spawnRoom.bounds.height / 2
+        );
+
+        // Instancia o jogador na posição central da sala
+        player = Instantiate(playerPrefab, new Vector3(spawnPosition.x, 0, spawnPosition.y), Quaternion.identity);
+        Instantiate(cameraPrefab);
     }
 
-    // Escolhe uma sala aleatória
-    int randomIndex = random.Next(0, rooms.Count);
-    Room spawnRoom = rooms[randomIndex];
 
-    // Obtém a posição central da sala
-    Vector2Int spawnPosition = new Vector2Int(
-        spawnRoom.bounds.x + spawnRoom.bounds.width / 2,
-        spawnRoom.bounds.y + spawnRoom.bounds.height / 2
-    );
-
-    // Instancia o jogador na posição central da sala
-    player = Instantiate(playerPrefab, new Vector3(spawnPosition.x, 0, spawnPosition.y), Quaternion.identity);
-    Instantiate(cameraPrefab);
-}
-
-
-void PlaceDoorInFarthestRoom(Vector2 playerSpawnPosition) 
+    void PlaceDoorInFarthestRoom(Vector3 playerSpawnPosition) 
     {
         Room farthestRoom = null;
         float maxDistance = 0;
 
         // Encontra a sala mais distante da posição do jogador
-        foreach (var room in rooms) {
-            Vector2Int roomCenter = new Vector2Int(
-                room.bounds.x + room.bounds.width / 2,
-                room.bounds.y + room.bounds.height / 2
-            );
+        foreach (var room in rooms) 
+        {
+            
+            Vector3 roomCenter = new Vector3(room.bounds.center.x, 0, room.bounds.center.y);
+            float distance = Vector3.Distance(playerSpawnPosition, roomCenter);
 
-            float distance = Vector2.Distance(playerSpawnPosition, roomCenter);
             if (distance > maxDistance) {
                 maxDistance = distance;
                 farthestRoom = room;
             }
-        }
+            
+        } 
 
         if (farthestRoom != null) {
-            // Encontra a conexão entre a sala mais distante e o corredor
-            foreach (var edge in selectedEdges) 
+            for (int x = 0; x < farthestRoom.bounds.size.x; x++) 
             {
-                var startRoom = (edge.U as Vertex<Room>).Item;
-                var endRoom = (edge.V as Vertex<Room>).Item;
-
-                if (startRoom == farthestRoom || endRoom == farthestRoom) 
+                for (int y = 0; y < farthestRoom.bounds.size.y; y++) 
                 {
-                    // Determina a direção da conexão
-                    Vector2Int connectionDirection = (startRoom == farthestRoom) ?
-                        new Vector2Int((int)endRoom.bounds.center.x - (int)startRoom.bounds.center.x,
-                                    (int)endRoom.bounds.center.y - (int)startRoom.bounds.center.y) :
-                        new Vector2Int((int)startRoom.bounds.center.x - (int)endRoom.bounds.center.x,
-                                    (int)startRoom.bounds.center.y - (int)endRoom.bounds.center.y);
-
-                    // Normaliza a direção para obter a célula adjacente
-                    connectionDirection = new Vector2Int(
-                        Mathf.Clamp(connectionDirection.x, -1, 1),
-                        Mathf.Clamp(connectionDirection.y, -1, 1)
-                    );
-
-                    // Calcula a posição da conexão (célula da sala que se conecta ao corredor)
-                    Vector2Int connectionPosition = (startRoom == farthestRoom) ?
-                        new Vector2Int((int)startRoom.bounds.center.x + connectionDirection.x,
-                                    (int)startRoom.bounds.center.y + connectionDirection.y) :
-                        new Vector2Int((int)endRoom.bounds.center.x + connectionDirection.x,
-                                    (int)endRoom.bounds.center.y + connectionDirection.y);
-                                    
-
-                    // Determina a rotação da porta com base na direção do corredor
-                    Quaternion doorRotation = Quaternion.identity;
-                    if (connectionDirection.x == 1) 
+                    foreach((int, int, int) direction in Grid2D<CellType>.Directions)
                     {
-                        // Corredor à direita: porta rotacionada 90°
-                        doorRotation = Quaternion.Euler(0, 90, 0);
-                        connectionPosition.x++;
-                    } 
-                    else if (connectionDirection.x == -1) 
-                    {
-                        // Corredor à esquerda: porta rotacionada -90°
-                        doorRotation = Quaternion.Euler(0, -90, 0);
-                        connectionPosition.x--;    
-                    } 
-                    else if (connectionDirection.y == 1) 
-                    {
-                        // Corredor acima: porta rotacionada 0°
-                        doorRotation = Quaternion.Euler(0, -180, 0); ;                      
-                    } 
-                    else if (connectionDirection.y == -1) 
-                    {
-                        // Corredor abaixo: porta rotacionada 180°
-                        doorRotation = Quaternion.Euler(0, 180, 0);          
+                        Vector2Int testPos = new Vector2Int(farthestRoom.bounds.position.x+x+direction.Item1, farthestRoom.bounds.position.y+y+direction.Item2);
+                        
+                        if (testPos.x >= 0 && testPos.x < size.x && testPos.y >= 0 && testPos.y < size.y)
+                        {
+                            if(grid[testPos] == CellType.Hallway)
+                            {
+                                    for(int i = 0; i < selectedEdges.Count; i++)
+                                    {
+                                        if (connectionPoints[i].Contains(new Vector2Int(farthestRoom.bounds.position.x+x, farthestRoom.bounds.position.y+y)))
+                                        {
+                                            Instantiate(roomDoorPrefab, new Vector3(farthestRoom.bounds.position.x+x, 0, farthestRoom.bounds.position.y+y), Quaternion.Euler(0, direction.Item3, 0));
+                                        }
+                                    }
+                            }
+                        }
                     }
-
-                    // Coloca a porta na conexão
-                    Instantiate(roomDoorPrefab, new Vector3(connectionPosition.x, 0, connectionPosition.y), doorRotation);
                     
-                    break;
                 }
             }
+
+            // Encontra a sala mais distante para a chave
+            Room keyRoom = FindFarthestRoomForKey(playerSpawnPosition, farthestRoom);
+
+            if (keyRoom != null) 
+            {
+                // Instancia a chave no centro da sala
+                Vector3 keyPosition = new Vector3(keyRoom.bounds.center.x, 0, keyRoom.bounds.center.y);
+                Instantiate(key, keyPosition, Quaternion.identity);
+            }
+            
         }
-}
+    }
+
+    Room FindFarthestRoomForKey(Vector3 playerSpawnPosition, Room doorRoom) 
+    {
+        Room farthestRoom = null;
+        float maxDistance = 0;
+
+        foreach (var room in rooms) 
+        {
+            // Ignora a sala de spawn e a sala com a porta
+            if (room == doorRoom || room.bounds.center == new Vector2(playerSpawnPosition.x, playerSpawnPosition.z)) 
+            {
+                continue;
+            }
+
+            // Calcula a distância da sala até o spawn do jogador e até a sala com a porta
+            Vector3 roomCenter = new Vector3(room.bounds.center.x, 0, room.bounds.center.y);
+            float distanceToPlayer = Vector3.Distance(playerSpawnPosition, roomCenter);
+            float distanceToDoor = Vector3.Distance(new Vector3(doorRoom.bounds.center.x, 0, doorRoom.bounds.center.y), roomCenter);
+
+            // Usa a média das distâncias para encontrar a sala mais distante de ambos
+            float averageDistance = (distanceToPlayer + distanceToDoor) / 2;
+
+            if (averageDistance > maxDistance) 
+            {
+                maxDistance = averageDistance;
+                farthestRoom = room;
+            }
+        }
+
+        return farthestRoom;
+    }
+
 }

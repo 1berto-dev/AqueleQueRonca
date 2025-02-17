@@ -153,7 +153,7 @@ Light:
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 2
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -271,6 +271,7 @@ MonoBehaviour:
   size: {x: 50, y: 50}
   roomCount: 20
   roomMaxSize: {x: 10, y: 10}
+  roomMinSize: {x: 3, y: 3}
   cubePrefab: {fileID: 7407655776228300617, guid: f78fc5d48d48447499ce9e36ab24d9fd, type: 3}
   redMaterial: {fileID: 2100000, guid: 0f29e3c1c576f6641b9e474f6b194480, type: 2}
   blueMaterial: {fileID: 2100000, guid: 9f74a13152dad544abedc7538eb3182c, type: 2}
@@ -281,6 +282,8 @@ MonoBehaviour:
   roomDoorPrefab: {fileID: 7492127373705060975, guid: 9e4e194612f5f814b9a1b2a8ba973118, type: 3}
   hallwayWallPrefab: {fileID: 7588077149681847488, guid: b3b33be65e66cd643b83727f388397bb, type: 3}
   hallwayFloorPrefab: {fileID: 8098637983797081178, guid: 202ae0a8919e73f4ea844355b4f0d7c9, type: 3}
+  key: {fileID: 8183965403152113043, guid: 674ad6f9e5e4b6d439f65523c8684f7e, type: 3}
+  seed: 0
 --- !u!4 &1947973967
 Transform:
   m_ObjectHideFlags: 0

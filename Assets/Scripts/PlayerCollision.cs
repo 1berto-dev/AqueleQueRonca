@@ -19,7 +19,6 @@ public class PlayerCollision : MonoBehaviour
 
         if(other.gameObject.CompareTag("Door") && playerInventory.HasKey)
         {
-            playerInventory.HasKey = false;
             Destroy(other.gameObject);
         }
     }
